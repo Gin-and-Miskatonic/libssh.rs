@@ -1,8 +1,6 @@
-#![feature(globs)]
-#![feature(phase)]
-#[phase(plugin, link)] extern crate log;
+extern crate log;
 
-use std::sync::{Once, ONCE_INIT};
+use std::sync::Once;
 
 pub mod libssh_server;
 pub mod libssh;
@@ -11,16 +9,16 @@ pub mod ssh_session;
 pub mod ssh_bind;
 pub mod ssh_message;
 
-static SSH_INIT: Once = ONCE_INIT;
+static SSH_INIT: Once = Once::new();
 
 pub fn ssh_init() {
-	SSH_INIT.doit(|| {
+	SSH_INIT.call_once(|| {
 		unsafe { libssh::ssh_init() };
 	})
 }
 
 pub fn ssh_finalize() {
-	debug!("calling ssh_finalize().");
+	log::debug!("calling ssh_finalize().");
 	unsafe { libssh::ssh_finalize() };
 }
 
@@ -31,7 +29,7 @@ impl Drop for SSHFinalizer {
 	}
 }
 
-pub fn with_ssh(func: ||) {
+pub fn with_ssh<F>(func: F) where F: Fn() {
 	ssh_init();
 
 	let finalizer = SSHFinalizer;

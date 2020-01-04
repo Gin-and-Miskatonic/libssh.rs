@@ -2,46 +2,48 @@
 #![allow(missing_copy_implementations)]
 
 extern crate libc;
+extern crate log;
 
-use libssh_server::*;
-use ssh_key;
-use ssh_session::SSHSession;
-use ssh_message;
+use log::debug;
+
+use crate::libssh_server::*;
+use crate::ssh_key;
+use crate::ssh_session::SSHSession;
+use crate::ssh_message;
 
 use std::mem;
 use std::ptr;
-use self::libc::types::common::c95::c_void;
+use std::ffi::*;
+//use self::libc::types::common::c95::c_void;
 
 pub struct SSHBind {
 	_bind: *mut ssh_bind_struct
 }
 
 impl SSHBind {
-	pub fn new(priv_key_file: &str, host: Option<&str>, port: Option<&str>)
+	pub fn new(priv_key_file: &str, host: Option<&str>, port: Option<u32>)
 		-> Result<SSHBind, &'static str>
 	{
 		let ptr = unsafe { ssh_bind_new() };
-		assert!(ptr.is_not_null());
+		assert!(!ptr.is_null());
 
 		let bind = SSHBind { _bind: ptr };
 		
 		if host.is_some() {
-			try!(bind.set_host(host.unwrap()));
+			bind.set_host(host.unwrap())?;
 		}
-		try!(bind.set_port(port.unwrap_or("22")));
+		bind.set_port(port.unwrap_or(22))?;
 
-		try!(bind.set_private_key_file(priv_key_file));
+		bind.set_private_key_file(priv_key_file)?;
 
 		Ok(bind)
 	}
 
 	pub fn set_host(&self, host: &str) -> Result<(),&'static str> {
-		assert!(self._bind.is_not_null());
+		assert!(!self._bind.is_null());
 
 		let opt = ssh_bind_options_e::SSH_BIND_OPTIONS_BINDADDR as u32;
-		let res = host.with_c_str(|h| {
-			unsafe { ssh_bind_options_set(self._bind, opt, h as *const c_void) }
-		});
+		let res = unsafe { ssh_bind_options_set(self._bind, opt, CString::new(host).unwrap().as_ptr() as *const c_void) };
 
 		match res {
 			SSH_OK => Ok(()),
@@ -49,13 +51,14 @@ impl SSHBind {
 		}
 	}
 
-	pub fn set_port(&self, port: &str) -> Result<(),&'static str> {
-		assert!(self._bind.is_not_null());
-
+	pub fn set_port(&self, mut port: u32) -> Result<(),&'static str> {
+		assert!(!self._bind.is_null());
+		//when port was a &str let mut port = port.parse::<u32>().unwrap();
+		//the line of nonsense below safely converts an unsigned rust int to a struct that can be turned into a c_void ptr
+		let portref: std::ptr::NonNull<c_void> = std::ptr::NonNull::new(&mut port).unwrap().cast();
 		let opt = ssh_bind_options_e::SSH_BIND_OPTIONS_BINDPORT as u32;
-		let res = port.with_c_str(|p| unsafe {
-			ssh_bind_options_set(self._bind, opt, p as *const c_void)
-		});
+		//let res = unsafe { ssh_bind_options_set(self._bind, opt, CString::new(port).unwrap().as_ptr() as *const c_void) };
+		let res = unsafe { ssh_bind_options_set(self._bind, opt, portref.as_ptr() as *const c_void) };
 
 		match res {
 			SSH_OK => Ok(()),
@@ -64,20 +67,17 @@ impl SSHBind {
 	}
 
 	pub fn set_private_key_file(&self, key_file: &str) -> Result<(),&'static str> {
-		assert!(self._bind.is_not_null());
+		assert!(!self._bind.is_null());
 
-		let opt_type = ssh_bind_options_e::SSH_BIND_OPTIONS_HOSTKEY as u32;
-		let res = "ssh-rsa".with_c_str(|typ| unsafe {
-			ssh_bind_options_set(self._bind, opt_type, typ as *const c_void)
-		});
+		/* let opt_type = ssh_bind_options_e::SSH_BIND_OPTIONS_HOSTKEY as u32;
+		I believe based on reading the libssh docs that this is unnecessary and actually causes errors
+		let res = unsafe { ssh_bind_options_set(self._bind, opt_type, CString::new("ssh-rsa").unwrap().as_ptr() as *const c_void) };
 		if res != SSH_OK {
 			return Err("ssh_bind_options_set() failed for private key (HOSTKEY)");
 		}
-
-		let opt_key = ssh_bind_options_e::SSH_BIND_OPTIONS_RSAKEY as u32;
-		let res = key_file.with_c_str(|pkey_file| unsafe {
-			ssh_bind_options_set(self._bind, opt_key, pkey_file as *const c_void)
-		});
+		*/
+		let opt_key = ssh_bind_options_e::SSH_BIND_OPTIONS_HOSTKEY as u32;
+		let res = unsafe { ssh_bind_options_set(self._bind, opt_key, CString::new(key_file).unwrap().as_ptr() as *const c_void) };
 
 		match res {
 			SSH_OK => Ok(()),
@@ -86,7 +86,7 @@ impl SSHBind {
 	}
 
 	pub fn listen(&self) -> Result<(),&'static str> {
-		assert!(self._bind.is_not_null());
+		assert!(!self._bind.is_null());
 
 		let res = unsafe { ssh_bind_listen(self._bind) };
 		debug!("listen={}", res);
@@ -97,7 +97,7 @@ impl SSHBind {
 	}
 
 	pub fn accept(&self, session: &SSHSession) -> Result<(),&'static str> {
-		assert!(self._bind.is_not_null());
+		assert!(!self._bind.is_null());
 
 		let res = unsafe { ssh_bind_accept(self._bind, mem::transmute(session.raw())) };
 		match res {
@@ -107,7 +107,7 @@ impl SSHBind {
 	}
 
 	pub fn set_log_level(&self, level: i32) -> Result<(),&'static str> {
-		assert!(self._bind.is_not_null());
+		assert!(!self._bind.is_null());
 		let res = unsafe { ssh_set_log_level(level) };
 		match res {
 			SSH_OK => Ok(()),

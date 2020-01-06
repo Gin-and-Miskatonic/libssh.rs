@@ -10,7 +10,7 @@ use crate::ssh_session::SSHSession;
 use std::mem;
 use std::ptr;
 //use self::libc::types::common::c95::c_void;
-use std::ffi::c_void;
+use std::ffi::{c_void, CString};
 
 pub struct SSHMessage {
 	_msg: *mut ssh_message_struct
@@ -56,6 +56,24 @@ impl SSHMessage {
 		assert!(!self._msg.is_null());
 
 		unsafe { ssh_message_subtype(self._msg) }
+	}
+
+	pub fn get_global_request_port(self: &Self) -> i32 {
+		assert!(!self._msg.is_null());
+
+		unsafe { ssh_message_global_request_port(self._msg) }
+	}
+
+	pub fn get_global_request_address(self: &Self) -> String {
+		assert!(!self._msg.is_null());
+		
+		unsafe { CString::from_raw(ssh_message_global_request_address(self._msg) as *mut i8).into_string().unwrap() }
+	}
+
+	pub fn global_reply_success(self: &Self, bound_port: u16) -> i32 {
+		assert!(!self._msg.is_null());
+
+		unsafe { ssh_message_global_request_reply_success(self._msg, bound_port as libc::c_ushort) }
 	}
 
 	pub fn reply_default(&self) -> Result<(), &'static str> {

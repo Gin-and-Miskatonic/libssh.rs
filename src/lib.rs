@@ -6,6 +6,7 @@ pub mod libssh_server;
 pub mod libssh;
 pub mod ssh_key;
 pub mod ssh_session;
+pub mod ssh_channel;
 pub mod ssh_bind;
 pub mod ssh_message;
 

@@ -25,7 +25,7 @@ impl SFTPSession {
 		Ok(SFTPSession { _sftp: sftp })
 	}
 
-	pub fn raw(self: &Self) {
+	pub fn raw(self: &Self) -> *mut sftp_session_struct {
 		self._sftp
 	}
 

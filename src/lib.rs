@@ -9,9 +9,12 @@ pub mod ssh_session;
 pub mod ssh_channel;
 pub mod ssh_bind;
 pub mod ssh_message;
+pub mod sftp;
+pub mod sftp_session;
 
 static SSH_INIT: Once = Once::new();
 
+//The following functions are only necessary if libssh is statically linked. In most use cases, they should not be called.
 pub fn ssh_init() {
 	SSH_INIT.call_once(|| {
 		unsafe { libssh::ssh_init() };

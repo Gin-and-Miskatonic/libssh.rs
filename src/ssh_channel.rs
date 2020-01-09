@@ -45,7 +45,7 @@ impl SSHChannel {
 		}
 	}
 
-	pub fn read_nonblocking(self: &Self, mut dest: &mut [u8; libssh_server::BYTECOUNT], is_stderr: bool) -> i32 {
+	pub fn read_nonblocking(self: &Self, dest: &mut [u8; libssh_server::BYTECOUNT], is_stderr: bool) -> i32 {
 		assert!(!self._channel.is_null());
 		let pointer = std::ptr::NonNull::new(dest).unwrap().cast::<c_void>().as_ptr();
 		let stderr = match is_stderr{

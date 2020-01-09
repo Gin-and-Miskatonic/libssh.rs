@@ -1,4 +1,5 @@
 #![allow(missing_copy_implementations)]
+#![allow(improper_ctypes)]
 #![allow(non_camel_case_types)]
 
 extern crate libc;
@@ -9,7 +10,6 @@ int ssh_blocking_flush()
 	(ssh_session) session [struct ssh_session_struct *]
 	(int) timeout
 */
-//apparently this only needs to be specified once, and all further functions link against it. May not work in practice?
 #[link(name="ssh")]
 extern "C" {
 	pub fn ssh_blocking_flush(session: *mut ssh_session_struct, timeout: libc::c_int) -> libc::c_int;

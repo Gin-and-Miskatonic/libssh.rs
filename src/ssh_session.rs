@@ -49,7 +49,7 @@ impl SSHSession {
 			let ptr = self._session as *mut c_void;
 
 			let err_msg = unsafe {
-				let mut err = ssh_get_error(ptr);
+				let err = ssh_get_error(ptr);
 				assert!(!err.is_null());
 
 				//String::from_raw_buf(err as *const u8)

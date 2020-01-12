@@ -29,7 +29,39 @@ impl SSHChannel {
 	}
 
 	pub fn raw(self: &Self) -> *mut ssh_channel_struct {
+		assert!(!self._channel.is_null());
+
 		self._channel
+	}
+
+	pub fn send_eof(self: &Self) -> i32 {
+		assert!(!self._channel.is_null());
+		
+		unsafe { ssh_channel_send_eof(self._channel) as i32 }
+	}
+
+	pub fn is_eof(self: &Self) -> bool {
+		assert!(!self._channel.is_null());
+		
+		match unsafe { ssh_channel_is_eof(self._channel) } {
+			0 => false,
+			_ => true,
+		}
+	}
+
+	pub fn is_open(self: &Self) -> bool {
+		assert!(!self._channel.is_null());
+
+		match unsafe { ssh_channel_is_open(self._channel) } {
+			0 => false,
+			_ => true
+		}
+	}
+
+	pub fn open_session(self: &Self) -> i32 {
+		assert!(!self._channel.is_null());
+		
+		unsafe { ssh_channel_open_session(self._channel) }
 	}
 
 	pub fn open_reverse_forward(self: &Self, remotehost: &str, remoteport: i32, sourcehost: &str, localport: i32) -> i32 {
@@ -45,7 +77,7 @@ impl SSHChannel {
 		}
 	}
 
-	pub fn read_nonblocking(self: &Self, dest: &mut [u8; libssh_server::BYTECOUNT], is_stderr: bool) -> i32 {
+	pub fn read_nonblocking(self: &Self, dest: &mut [u8], is_stderr: bool) -> i32 {
 		assert!(!self._channel.is_null());
 		let pointer = std::ptr::NonNull::new(dest).unwrap().cast::<c_void>().as_ptr();
 		let stderr = match is_stderr{
@@ -55,10 +87,10 @@ impl SSHChannel {
 		unsafe { ssh_channel_read_nonblocking(self._channel, pointer, libssh_server::BYTECOUNT as u32, stderr) }
 	}
 
-	pub fn write(self: &Self, mut buf: [u8; libssh_server::BYTECOUNT]) -> i32 {
+	pub fn write(self: &Self, buf: &mut [u8], count: usize) -> i32 {
 		assert!(!self._channel.is_null());
-		let pointer = std::ptr::NonNull::new(&mut buf).unwrap().cast::<c_void>().as_ptr();
-		unsafe { ssh_channel_write(self._channel, pointer, libssh_server::BYTECOUNT as u32) }
+		let pointer = std::ptr::NonNull::new(buf).unwrap().cast::<c_void>().as_ptr();
+		unsafe { ssh_channel_write(self._channel, pointer, count as u32) }
 	}
 }
 

@@ -17,11 +17,14 @@ pub struct SSHSession {
 }
 
 impl SSHSession {
-	pub fn new(host: Option<&str>) -> Result<SSHSession, ()> {
+	pub fn new(user: Option<&str>, host: Option<&str>) -> Result<SSHSession, ()> {
 		let ptr = unsafe { ssh_new() };
 		assert!(!ptr.is_null());
 
 		let session = SSHSession {_session: ptr};
+		if user.is_some() {
+			session.set_user(user.unwrap())?
+		}
 		if host.is_some() {
 			session.set_host(host.unwrap())?
 		}
@@ -40,6 +43,19 @@ impl SSHSession {
 			_           => Err(())
 		}
 	}
+
+	pub fn set_user(&self, user: &str) -> Result<(),()> {
+		assert!(!self._session.is_null());
+
+		let opt = ssh_options_e::SSH_OPTIONS_USER as u32;
+		let res = unsafe { ssh_options_set(self._session, opt, CString::new(user).unwrap().as_ptr() as *const c_void) } ;
+
+		match res {
+			SSH_OK => Ok(()),
+			_           => Err(())
+		}
+	}
+
  //formerly pub fn connect(&self, verify_public_key: |public_key: &SSHKey| -> bool)
 	pub fn connect<F>(&self, verify_public_key: F) -> Result<(), String> where F: Fn(&SSHKey) -> bool {
 		assert!(!self._session.is_null());
@@ -88,15 +104,26 @@ impl SSHSession {
 		assert!(!self._session.is_null());
 
 		let key = pubkey.raw();
-		let func = |usr| unsafe {
-			ssh_userauth_try_publickey(self._session, usr, key)
-		};
+		let func = |usr| unsafe { ssh_userauth_try_publickey(self._session, usr, key) };
 
 		let ires = if username.is_none() { func(ptr::null()) } else
 			{ func(CString::new(username.unwrap()).unwrap().as_ptr()) };
 
 		let res = ssh_auth_e::from_i32(ires);
 		match res {
+			ssh_auth_e::SSH_AUTH_SUCCESS => println!("Key accepted, proceeding with attempt"),
+			ssh_auth_e::SSH_AUTH_PARTIAL |
+			ssh_auth_e::SSH_AUTH_DENIED |
+			ssh_auth_e::SSH_AUTH_AGAIN |
+			ssh_auth_e::SSH_AUTH_ERROR => return Err(res),
+			x => {panic!("{:?}", x);}
+		}
+
+		let func = |usr| unsafe { ssh_userauth_publickey(self._session, usr, key) };
+
+		let ires = if username.is_none() { func(ptr::null()) } else
+			{ func(CString::new(username.unwrap()).unwrap().as_ptr()) };
+		match ssh_auth_e::from_i32(ires) {
 			ssh_auth_e::SSH_AUTH_SUCCESS => Ok(()),
 			ssh_auth_e::SSH_AUTH_PARTIAL |
 			ssh_auth_e::SSH_AUTH_DENIED |
@@ -111,11 +138,12 @@ impl SSHSession {
 		self._session
 	}
 
-	pub fn set_port(&self, port: &str) -> Result<(),&'static str> {
+	pub fn set_port(&self, mut port: i32) -> Result<(),&'static str> {
 		assert!(!self._session.is_null());
 
 		let opt = ssh_options_e::SSH_OPTIONS_PORT as u32;
-		let res = unsafe{ ssh_options_set(self._session, opt, CString::new(port).unwrap().as_ptr() as *const c_void) };
+		let pointer = std::ptr::NonNull::new(&mut port).unwrap().cast::<libc::c_void>().as_ptr();
+		let res = unsafe{ ssh_options_set(self._session, opt, pointer) };
 
 		match res {
 			SSH_OK => Ok(()),

@@ -11,6 +11,7 @@ pub mod ssh_bind;
 pub mod ssh_message;
 pub mod sftp;
 pub mod sftp_session;
+pub mod sftp_file;
 
 static SSH_INIT: Once = Once::new();
 

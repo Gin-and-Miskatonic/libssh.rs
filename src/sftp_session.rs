@@ -26,6 +26,7 @@ impl SFTPSession {
 	}
 
 	pub fn raw(self: &Self) -> *mut sftp_session_struct {
+		assert!(!self._sftp.is_null());
 		self._sftp
 	}
 

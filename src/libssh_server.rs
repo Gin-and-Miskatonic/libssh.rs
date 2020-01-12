@@ -5,8 +5,6 @@
 extern crate libc;
 use std::mem;
 
-pub const BYTECOUNT: usize = 512;
-
 /*
 int ssh_blocking_flush()
 	(ssh_session) session [struct ssh_session_struct *]

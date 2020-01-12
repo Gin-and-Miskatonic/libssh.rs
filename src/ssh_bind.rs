@@ -69,15 +69,8 @@ impl SSHBind {
 	pub fn set_private_key_file(&self, key_file: &str) -> Result<(),&'static str> {
 		assert!(!self._bind.is_null());
 
-		/* let opt_type = ssh_bind_options_e::SSH_BIND_OPTIONS_HOSTKEY as u32;
-		I believe based on reading the libssh docs that this is unnecessary and actually causes errors
-		let res = unsafe { ssh_bind_options_set(self._bind, opt_type, CString::new("ssh-rsa").unwrap().as_ptr() as *const c_void) };
-		if res != SSH_OK {
-			return Err("ssh_bind_options_set() failed for private key (HOSTKEY)");
-		}
-		*/
-		let opt_key = ssh_bind_options_e::SSH_BIND_OPTIONS_HOSTKEY as u32;
-		let res = unsafe { ssh_bind_options_set(self._bind, opt_key, CString::new(key_file).unwrap().as_ptr() as *const c_void) };
+		let opt = ssh_bind_options_e::SSH_BIND_OPTIONS_HOSTKEY as u32;
+		let res = unsafe { ssh_bind_options_set(self._bind, opt, CString::new(key_file).unwrap().as_ptr() as *const c_void) };
 
 		match res {
 			SSH_OK => Ok(()),

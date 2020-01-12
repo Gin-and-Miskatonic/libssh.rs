@@ -77,14 +77,14 @@ impl SSHChannel {
 		}
 	}
 
-	pub fn read_nonblocking(self: &Self, dest: &mut [u8], is_stderr: bool) -> i32 {
+	pub fn read_nonblocking(self: &Self, dest: &mut [u8], count: usize, is_stderr: bool) -> i32 {
 		assert!(!self._channel.is_null());
 		let pointer = std::ptr::NonNull::new(dest).unwrap().cast::<c_void>().as_ptr();
 		let stderr = match is_stderr{
 			true => 1,
 			false => 0,
 		};
-		unsafe { ssh_channel_read_nonblocking(self._channel, pointer, libssh_server::BYTECOUNT as u32, stderr) }
+		unsafe { ssh_channel_read_nonblocking(self._channel, pointer, count as u32, stderr) }
 	}
 
 	pub fn write(self: &Self, buf: &mut [u8], count: usize) -> i32 {

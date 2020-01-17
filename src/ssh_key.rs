@@ -70,6 +70,70 @@ impl SSHKey {
 		}
 	}
 
+	pub fn private_key_from_file(fname: &str) -> Result<SSHKey, ()> {
+		let mut key = 0 as *mut ssh_key_struct;
+
+		let pwd = ptr::null();
+		let auth_fn: Option<AuthCb> = Option::None;
+		let auth_data = 0 as *mut c_void;
+
+		match unsafe { ssh_pki_import_privkey_file(CString::new(fname).unwrap().as_ptr(), pwd, auth_fn, auth_data, &mut key) } {
+			SSH_OK => {
+				assert!(!key.is_null());
+				Ok(SSHKey { _key: key })
+			},
+			_ => Err(()),
+		}
+	}
+
+	pub fn generate_keypair(keytype: u32, param: i32) -> Result<SSHKey, ()> {
+		let mut key = 0 as *mut ssh_key_struct;
+
+		match unsafe { ssh_pki_generate(keytype as libc::c_uint, param as libc::c_int, &mut key) } {
+			SSH_OK => {
+				assert!(!key.is_null());
+				Ok(SSHKey { _key: key })
+			},
+			_ => Err(()),
+		}
+	}
+
+	pub fn private_key_to_base64(self: &Self, passphrase: &str) -> Result<&str, ()> {
+		//this function currently does not support custom auth callbacks
+		assert!(!self._key.is_null());
+
+		let phrase = CString::new(passphrase).unwrap();
+		let mut res = std::ptr::null::<libc::c_char>() as *mut libc::c_char;
+
+		match unsafe { ssh_pki_export_privkey_base64(self._key, phrase.as_ptr(), Option::None, std::ptr::null::<libc::c_void>() as *mut libc::c_void, &mut res) } {
+			SSH_OK => unsafe { Ok(CStr::from_ptr(res).to_str().unwrap()) },
+			_ => Err(()),
+		}
+	}
+
+	pub fn private_key_to_file(self: &Self, passphrase: &str, filename: &str) -> Result<(), ()> {
+		//this function currently does not support custom auth callbacks
+		assert!(!self._key.is_null());
+
+		let phrase = CString::new(passphrase).unwrap();
+		let fname = CString::new(filename).unwrap();
+		match unsafe { ssh_pki_export_privkey_file(self._key, phrase.as_ptr(), Option::None, std::ptr::null::<libc::c_void>() as *mut libc::c_void, fname.as_ptr()) } {
+			SSH_OK => Ok(()),
+			_ => Err(()),
+		}
+	}
+
+	pub fn public_key_to_file(self: &Self, filename: &str) -> Result<(), ()> {
+		assert!(!self._key.is_null());
+
+		let fname = CString::new(filename).unwrap();
+		match unsafe { ssh_pki_export_pubkey_file(self._key, fname.as_ptr()) } {
+			SSH_OK => Ok(()),
+			_ => Err(()),
+		}
+	}
+		
+
 	/* used by client to get server's public key */
 	pub fn from_session(session: &SSHSession)
 			-> Result<SSHKey, &'static str>

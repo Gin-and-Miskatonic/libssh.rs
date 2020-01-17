@@ -996,6 +996,18 @@ extern "C" {
 	pub fn ssh_pki_import_pubkey_base64(b64_key: *const libc::c_char, type_: libc::c_uint, pkey: *mut *mut ssh_key_struct) -> libc::c_int;
 }
 
+/*
+int ssh_pki_export_privkey_base64()
+		(const ssh_key)  	privkey,
+		(const char *)  	passphrase,
+		(ssh_auth_callback)  	auth_fn,
+		(void *)  	auth_data,
+		(char **)  	b64_key 
+*/
+extern "C" {
+	pub fn ssh_pki_export_privkey_base64(privkey: *mut ssh_key_struct, passphrase: *const libc::c_char, auth_fn: Option<extern fn(*const libc::c_char, *mut libc::c_char, libc::c_ulong, libc::c_int, libc::c_int, *mut libc::c_void) -> libc::c_int>, auth_data: *mut libc::c_void, b64_key: *mut *mut libc::c_char) -> libc::c_int;
+}
+
 
 /*
 int ssh_pki_import_pubkey_file()

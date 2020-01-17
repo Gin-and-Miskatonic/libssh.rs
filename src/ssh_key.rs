@@ -123,6 +123,16 @@ impl SSHKey {
 		}
 	}
 
+	pub fn public_key_to_base64(self: &Self) -> Result<&str, ()> {
+		assert!(!self._key.is_null());
+
+		let mut res = std::ptr::null::<libc::c_char>() as *mut libc::c_char;
+		match unsafe { ssh_pki_export_pubkey_base64(self._key, &mut res) } {
+			SSH_OK => unsafe { Ok(CStr::from_ptr(res).to_str().unwrap()) },
+			_ => Err(()),
+		}
+	}
+
 	pub fn public_key_to_file(self: &Self, filename: &str) -> Result<(), ()> {
 		assert!(!self._key.is_null());
 

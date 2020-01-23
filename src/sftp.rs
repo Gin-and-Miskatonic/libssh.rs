@@ -288,7 +288,31 @@ extern "C" {
 }
 
 #[repr(C)]
-pub struct sftp_attributes_struct;
+pub struct sftp_attributes_struct{
+	name: *mut libc::c_char,
+	longname: *mut libc::c_char,
+	flags: u32,
+	type_: u8,
+	size: usize,
+	uid: u32,
+	gid: u32,
+	owner: *mut libc::c_char,
+	group: *mut libc::c_char,
+	permissions: u32,
+	atime64: u64,
+	atime: u32,
+	atime_nseconds: u32,
+	createtime: u64,
+	createtime_nseconds: u32,
+	mtime64: u64,
+	mtime: u32,
+	mtime_nseconds: u32,
+	acl: *mut ssh_string_struct,
+	extended_count: u32,
+	extended_type: *mut ssh_string_struct,
+	extended_data: *mut ssh_string_struct,
+}
+
 
 #[repr(C)]
 pub struct sftp_client_message_struct;

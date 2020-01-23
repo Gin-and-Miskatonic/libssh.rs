@@ -10,8 +10,7 @@ use crate::ssh_message::SSHMessage;
 use crate::ssh_session::SSHSession;
 
 //use self::libc::types::common::c95::c_void;
-use std::ptr;
-use std::mem;
+use std::{mem,ptr};
 use std::ffi::*;
 
 type AuthCb = extern fn(*const i8, *mut i8, u64, i32, i32, *mut c_void) -> i32;

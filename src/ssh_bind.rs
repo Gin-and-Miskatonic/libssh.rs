@@ -108,3 +108,9 @@ impl SSHBind {
 		}
 	}
 }
+
+impl Drop for SSHBind {
+	fn drop(&mut self) {
+		unsafe{ ssh_bind_free(self._bind); }
+	}
+}

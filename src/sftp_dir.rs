@@ -53,7 +53,7 @@ impl SFTPDir {
 	}
 }
 
-impl Drop for SFTPAttributes {
+impl Drop for SFTPDir {
 	fn drop(self: &mut Self) {
 		unsafe { sftp_closedir(self._dir); }
 	}

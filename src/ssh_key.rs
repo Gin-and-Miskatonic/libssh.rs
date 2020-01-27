@@ -97,7 +97,7 @@ impl SSHKey {
 		}
 	}
 
-	pub fn private_key_to_base64(self: &Self, passphrase: &str) -> Result<&str, ()> {
+	pub fn private_key_to_base64(self: &Self) -> Result<&str, ()> {
 		//this function currently does not support custom auth callbacks
 		assert!(!self._key.is_null());
 

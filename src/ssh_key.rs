@@ -101,22 +101,23 @@ impl SSHKey {
 		//this function currently does not support custom auth callbacks
 		assert!(!self._key.is_null());
 
-		let phrase = CString::new(passphrase).unwrap();
+		let phrase = std::ptr::null();
 		let mut res = std::ptr::null::<libc::c_char>() as *mut libc::c_char;
 
-		match unsafe { ssh_pki_export_privkey_base64(self._key, phrase.as_ptr(), Option::None, std::ptr::null::<libc::c_void>() as *mut libc::c_void, &mut res) } {
+		match unsafe { ssh_pki_export_privkey_base64(self._key, phrase, Option::None, std::ptr::null::<libc::c_void>() as *mut libc::c_void, &mut res) } {
 			SSH_OK => unsafe { Ok(CStr::from_ptr(res).to_str().unwrap()) },
 			_ => Err(()),
 		}
 	}
 
-	pub fn private_key_to_file(self: &Self, passphrase: &str, filename: &str) -> Result<(), ()> {
+	pub fn private_key_to_file(self: &Self, filename: &str) -> Result<(), ()> {
 		//this function currently does not support custom auth callbacks
+		//also does not support pass phrases
 		assert!(!self._key.is_null());
 
-		let phrase = CString::new(passphrase).unwrap();
+		let phrase = std::ptr::null();
 		let fname = CString::new(filename).unwrap();
-		match unsafe { ssh_pki_export_privkey_file(self._key, phrase.as_ptr(), Option::None, std::ptr::null::<libc::c_void>() as *mut libc::c_void, fname.as_ptr()) } {
+		match unsafe { ssh_pki_export_privkey_file(self._key, phrase, Option::None, std::ptr::null::<libc::c_void>() as *mut libc::c_void, fname.as_ptr()) } {
 			SSH_OK => Ok(()),
 			_ => Err(()),
 		}

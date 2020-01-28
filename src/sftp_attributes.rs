@@ -17,6 +17,14 @@ pub struct SFTPAttributes {
 
 impl SFTPAttributes {
 //TODO: implement more functions for pulling info from the attributes struct
+	pub fn new(att: *mut sftp_attributes_struct) -> Result<SFTPAttributes, ()> {
+		if att.is_null() {
+			Err(())
+		} else {
+			Ok(SFTPAttributes{ _att: att})
+		}
+	}
+
 	pub fn raw(self: &Self) -> *mut sftp_attributes_struct {
 		assert!(!self._att.is_null());
 
@@ -25,19 +33,19 @@ impl SFTPAttributes {
 
 	pub fn name(self: &Self) -> &str {
 		assert!(!self._att.is_null());
-		let s = std::ffi::Cstr::from_ptr(self._att.name);
+		let s = unsafe{ std::ffi::CStr::from_ptr((*self._att).name) };
 		s.to_str().unwrap()
 	}
 
 	pub fn longname(self: &Self) -> &str {
 		assert!(!self._att.is_null());
-		let s = std::ffi::Cstr::from_ptr(self._att.longname);
+		let s = unsafe{ std::ffi::CStr::from_ptr((*self._att).longname) };
 		s.to_str().unwrap()
 	}
 
 	pub fn owner(self: &Self) -> &str {
 		assert!(!self._att.is_null());
-		let s = std::ffi::Cstr::from_ptr(self._att.owner);
+		let s = unsafe{ std::ffi::CStr::from_ptr((*self._att).owner) };
 		s.to_str().unwrap()
 	}
 }

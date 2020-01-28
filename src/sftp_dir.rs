@@ -49,7 +49,7 @@ impl SFTPDir {
 		if att.is_null() {
 			return Err(())
 		}
-		Ok(SFTPAttributes { _att: att })
+		Ok(SFTPAttributes::new(att).unwrap())
 	}
 }
 

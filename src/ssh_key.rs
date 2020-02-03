@@ -85,6 +85,18 @@ impl SSHKey {
 		}
 	}
 
+	pub fn public_key_from_file(fname: &str) -> Result<SSHKey,()> {
+		let mut key = 0 as *mut ssh_key_struct;
+		
+		match unsafe { ssh_pki_import_pubkey_file(CString::new(fname).unwrap().as_ptr(), &mut key) } {
+			SSH_OK => {
+				assert!(!key.is_null());
+				Ok(SSHKey { _key: key })
+			},
+			_ => Err(()),
+		}
+	}
+
 	pub fn generate_keypair(keytype: u32, param: i32) -> Result<SSHKey, ()> {
 		let mut key = 0 as *mut ssh_key_struct;
 

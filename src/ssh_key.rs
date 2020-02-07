@@ -13,7 +13,7 @@ use crate::ssh_session::SSHSession;
 use std::{mem,ptr};
 use std::ffi::*;
 
-type AuthCb = extern fn(*const i8, *mut i8, u64, i32, i32, *mut c_void) -> i32;
+type AuthCb = extern fn(*const i8, *mut i8, libc::c_ulong, i32, i32, *mut c_void) -> i32;
 
 pub struct SSHKey {
 	_key: *mut ssh_key_struct

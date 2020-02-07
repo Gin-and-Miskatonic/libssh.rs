@@ -18,7 +18,7 @@ pub struct SFTPFile {
 
 impl SFTPFile {
 	pub fn open(sftp: &SFTPSession, path: &str, accesstype: i32, mode: u32) -> Result<SFTPFile, ()> {
-		let f = unsafe { sftp_open(sftp.raw(), CString::new(path).unwrap().as_ptr(), accesstype as libc::c_int, mode as libc::mode_t) };
+		let f = unsafe { sftp_open(sftp.raw(), CString::new(path).unwrap().as_ptr(), accesstype as libc::c_int, mode as u32) };
 		if f.is_null() {
 			let e = sftp.get_error();
 			panic!("Could not open file: {:?}", e);

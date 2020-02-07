@@ -80,7 +80,7 @@ extern "C" {
 }
 
 extern "C" {
-	pub fn sftp_open(session: *mut sftp_session_struct, file: *const libc::c_char, accesstype: libc::c_int, mode: libc::mode_t) -> *mut sftp_file_struct;
+	pub fn sftp_open(session: *mut sftp_session_struct, file: *const libc::c_char, accesstype: libc::c_int, mode: u32) -> *mut sftp_file_struct;
 }
 
 extern "C" {
@@ -136,7 +136,7 @@ extern "C" {
 }
 
 extern "C" {
-	pub fn sftp_mkdir(sftp: *mut sftp_session_struct, directory: *const libc::c_char, mode: libc::mode_t) -> libc::c_int;
+	pub fn sftp_mkdir(sftp: *mut sftp_session_struct, directory: *const libc::c_char, mode: u32) -> libc::c_int;
 }
 
 extern "C" {
@@ -148,11 +148,11 @@ extern "C" {
 }
 
 extern "C" {
-	pub fn sftp_chown(sftp: *mut sftp_session_struct, file: *const libc::c_char, owner: libc::uid_t, group: libc::gid_t) -> libc::c_int;
+	pub fn sftp_chown(sftp: *mut sftp_session_struct, file: *const libc::c_char, owner: u32, group: u32) -> libc::c_int;
 }
 
 extern "C" {
-	pub fn sftp_chmod(sftp: *mut sftp_session_struct, file: *const libc::c_char, mode: libc::mode_t) -> libc::c_int;
+	pub fn sftp_chmod(sftp: *mut sftp_session_struct, file: *const libc::c_char, mode: u32) -> libc::c_int;
 }
 
 extern "C" {

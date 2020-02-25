@@ -172,9 +172,9 @@ SSH\_CHANNEL\_REQUEST\_SHELL =4,
 SSH\_CHANNEL\_REQUEST\_ENV =5,  
 SSH\_CHANNEL\_REQUEST\_SUBSYSTEM =6,  
 SSH\_CHANNEL\_REQUEST\_WINDOW\_CHANGE =7,  
-SSH_CHANNEL_REQUEST_X11 =8,
+SSH\_CHANNEL\_REQUEST\_X11 =8,
 
-That tells you what type of request is being made by the message. See [RFC 4250](https://tools.ietf.org/html/rfc4250#section-4.1.2) for 
+That tells you what type of request is being made by the message. See [RFC 4250](https://tools.ietf.org/html/rfc4250#section-4.1.2) for more information about these requests.
 
 #### get\_subtype
 -\> i32
@@ -223,7 +223,21 @@ This function should be called after the session is created to finalize the SFTP
 #### get\_error
 -\> sftp\_server\_responses\_e
 
-If any other SFTP method returns an unexpected response, this can be used to diagnose the underlying issue that caused the protocol to fail. Returns an enum containing the error code as described in the Server Responses section of the [api documentation.](https://api.libssh.org/stable/group__libssh__sftp.html)
+If any other SFTP method returns an unexpected response, this can be used to diagnose the underlying issue that caused the protocol to fail. Returns an enum of the error code, which can be one of the following:
+SSH\_FX\_OK = 0,  
+SSH\_FX\_EOF = 1,  
+SSH\_FX\_NO\_SUCH\_FILE = 2,  
+SSH\_FX\_PERMISSION\_DENIED = 3,  
+SSH\_FX\_FAILURE = 4,  
+SSH\_FX\_BAD\_MESSAGE = 5,  
+SSH\_FX\_NO\_CONNECTION = 6,  
+SSH\_FX\_CONNECTION\_LOST = 7,  
+SSH\_FX\_OP\_UNSUPPORTED = 8,  
+SSH\_FX\_INVALID\_HANDLE = 9,  
+SSH\_FX\_NO\_SUCH\_PATH = 10,  
+SSH\_FX\_FILE\_ALREADY\_EXISTS = 11,  
+SSH\_FX\_WRITE\_PROTECT = 12,  
+SSH\_FX\_NO\_MEDIA = 13,  
 
 ## SFTPFile
 
